@@ -1,0 +1,6 @@
+.idea/
+hank.iml
+node_modules
+.DS_Store*
+.hubot_history
+src/scripts/config.js
