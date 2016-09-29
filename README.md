@@ -4,8 +4,8 @@
 
 Hank, a child of [Hu](https://hubot.github.com), has only few custom commands for now.
 
-* Where does <name> sit?
-* Whats for lunch <today|tomorrow|on tuesday|...>
+* Where does {NAME} sit?
+* Whats for lunch {today|tomorrow|on tuesday|...}
  
 # TODO
 * Get the APIs working to have hank say something useful.
