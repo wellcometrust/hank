@@ -1,36 +1,18 @@
-const peopleSearch = require('./search/people');
-const foodSearch = require('./search/food');
+const docker_uri = 'https://registry.hub.docker.com/v2/repositories/wellcome/wellcomecollection/tags/'
+const github_root_api = 'https://api.github.com/repos/wellcometrust/wellcomecollection.org/git/commits/'
 
 module.exports = (robot) => {
-  // TODO (jamesgorrie): add days
-  robot.hear(/whats for lunch( .*)?/i, (res) => {
-    const day = res.match[1] ? res.match[1].replace('on', '').trim() : 'today';
+  robot.respond(/deploy/i, (res) => {
+    robot.http(docker_uri).get()((err, _, body) => {
+      const docker_json = JSON.parse(body)
+      const latest_commit_sha = docker_json.results.filter(result => result.name !== 'test')[0].name
+      const github_uri = `${github_root_api}${latest_commit_sha}`
 
-    foodSearch(robot, day).then((menus) => {
-      res.reply(`Sorry, I seem to have lost my glasses and can't read the menu just now... try again later`);
-    });
-  });
-
-  robot.hear(/where does (.*) sit/i, (res) => {
-    const name = res.match[1];
-    peopleSearch(robot, name).then(people => {
-      switch (people.length) {
-        case 0:
-          res.reply(`${name} doesn't work here, or is in hiding.`);
-          break;
-        case 1:
-          const person = people[0];
-          if (person.location) {
-            res.reply(`${person.name} sits ${person.location}`);
-          } else {
-            res.reply(`${person.name} apparently is sat nowhere, try looking on the roof.`);
-          }
-          break;
-        default:
-          const peopleNames = people.map(person => person.name).join(' or ');
-          res.reply(`Which ${name} do you mean? ${peopleNames}`);
-          break;
-      }
-    });
-  });
-};
+      robot.http(github_uri).get()((err, _, body) => {
+        const github_json = JSON.parse(body)
+        const github_message = github_json.message
+        res.send(`Deploying build ${latest_commit_sha}\n${github_message}`)
+      })
+    })
+  })
+}
